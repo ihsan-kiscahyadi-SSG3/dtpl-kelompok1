@@ -1,10 +1,23 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getSessionUser, updateUser } from "../../utils/auth";
 
 export default function ChangeEmail() {
-  const user = getSessionUser();
+  const [user, setUser] = useState<Awaited<ReturnType<typeof getSessionUser>>>(null);
   const [email, setEmail] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const sessionUser = await getSessionUser();
+      setUser(sessionUser);
+      setLoading(false);
+    };
+
+    void loadUser();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
 
   if (!user) return <p>Unauthorized</p>;
 

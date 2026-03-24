@@ -72,6 +72,12 @@ body{
   padding: 8px 10px;
 }
 
+.receipt__logo{
+  width: 240px;
+  height: auto;
+  margin-bottom: 12px;
+}
+
 .loginLeft__quote{
   color: #fff;
   font-weight: 900;

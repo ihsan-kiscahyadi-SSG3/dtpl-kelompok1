@@ -5,17 +5,33 @@ export type User = {
   phone?: string;
 };
 
+type SessionData = {
+  email: string;
+  id?: number;
+  full_name?: string;
+  name?: string;
+  role?: string;
+  phone_number?: string | null;
+  phone?: string | null;
+  password?: string;
+};
+
 const USERS_KEY = "dummy_users";
 const SESSION_KEY = "dummy_session";
 
-export function getSessionUser(): User | null {
+export async function getSessionUser(): Promise<User | null> {
   const session = localStorage.getItem(SESSION_KEY);
   if (!session) return null;
 
-  const { email } = JSON.parse(session);
-  const users: User[] = JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+  const data = JSON.parse(session) as SessionData;
+  if (!data.email) return null;
 
-  return users.find(u => u.email === email) || null;
+  return {
+    name: data.full_name ?? data.name ?? "",
+    email: data.email,
+    password: data.password ?? "",
+    phone: data.phone_number ?? data.phone ?? undefined,
+  };
 }
 
 export function updateUser(updated: User) {
@@ -26,13 +42,14 @@ export function updateUser(updated: User) {
   localStorage.setItem(USERS_KEY, JSON.stringify(newUsers));
 }
 
-export function setSession(email: string) {
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ email }));
+export function setSession(data: string | SessionData) {
+    const sessionData = typeof data === "string" ? { email: data } : data;
+    localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
 }
 
-export function getSession(): { email: string } | null {
+export function getSession(): SessionData | null {
     const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? JSON.parse(raw) as SessionData : null;
 }
 
 export function clearSession() {

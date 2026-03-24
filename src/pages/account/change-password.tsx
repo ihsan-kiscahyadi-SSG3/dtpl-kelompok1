@@ -1,16 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getSessionUser, updateUser } from "../../utils/auth";
 
 export default function ChangePassword() {
-  const user = getSessionUser();
+  const [user, setUser] = useState<Awaited<ReturnType<typeof getSessionUser>>>(null);
   const [oldPw, setOldPw] = useState("");
   const [newPw, setNewPw] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const sessionUser = await getSessionUser();
+      setUser(sessionUser);
+      setLoading(false);
+    };
+
+    void loadUser();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
 
   if (!user) return <p>Unauthorized</p>;
 
   const save = () => {
-    if (oldPw !== user.password) {
+    if (user.password && oldPw !== user.password) {
       alert("Kata sandi lama salah");
       return;
     }

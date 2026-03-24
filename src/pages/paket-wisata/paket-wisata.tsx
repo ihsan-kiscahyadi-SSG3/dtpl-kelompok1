@@ -1,139 +1,70 @@
 import { Link } from "react-router-dom";
+import { destinations } from "../../data/destinations";
 import Reveal from "../../components/reveal";
 import "./paket-wisata.css";
 
-type PackageItem = {
-  id: string;
-  paketNo: string;
-  title: string;
-  dateVenue: string;
-  time: string;
-  price: string;
-};
-
-const dummyPackages: PackageItem[] = [
-  {
-    id: "1",
-    paketNo: "PAKET 1",
-    title: "Kegiatan & Kerajinan",
-    dateVenue: "Date | Venue",
-    time: "00:00 AM - 00:00 PM",
-    price: "Rp. 200.000",
-  },
-  {
-    id: "2",
-    paketNo: "PAKET 2",
-    title: "Kegiatan & Kerajinan",
-    dateVenue: "Date | Venue",
-    time: "00:00 AM - 00:00 PM",
-    price: "Rp. 200.000",
-  },
-  {
-    id: "3",
-    paketNo: "PAKET 1",
-    title: "Kegiatan & Kerajinan",
-    dateVenue: "Date | Venue",
-    time: "00:00 AM - 00:00 PM",
-    price: "Rp. 200.000",
-  },
-  {
-    id: "4",
-    paketNo: "PAKET 1",
-    title: "Kegiatan & Kerajinan",
-    dateVenue: "Date | Venue",
-    time: "00:00 AM - 00:00 PM",
-    price: "Rp. 200.000",
-  },
-  {
-    id: "5",
-    paketNo: "PAKET 1",
-    title: "Kegiatan & Kerajinan",
-    dateVenue: "Date | Venue",
-    time: "00:00 AM - 00:00 PM",
-    price: "Rp. 200.000",
-  },
-  {
-    id: "6",
-    paketNo: "PAKET 1",
-    title: "Kegiatan & Kerajinan",
-    dateVenue: "Date | Venue",
-    time: "00:00 AM - 00:00 PM",
-    price: "Rp. 200.000",
-  },
-  {
-    id: "7",
-    paketNo: "PAKET 1",
-    title: "Kegiatan & Kerajinan",
-    dateVenue: "Date | Venue",
-    time: "00:00 AM - 00:00 PM",
-    price: "Rp. 200.000",
-  },
-  {
-    id: "8",
-    paketNo: "PAKET 1",
-    title: "Kegiatan & Kerajinan",
-    dateVenue: "Date | Venue",
-    time: "00:00 AM - 00:00 PM",
-    price: "Rp. 200.000",
-  },
-];
+function formatRupiah(value: string) {
+  return `Rp. ${Number(value).toLocaleString("id-ID")}`;
+}
 
 export default function PaketWisataPage() {
   return (
     <div className="paketPage">
-      {/* Banner */}
       <section className="paketHero">
-        <Reveal>
-          <div>
-            <h1 className="paketHero__title">PAKET WISATA</h1>
-            <div className="paketHero__underline" />
-          </div>
-        </Reveal>
+        <h1 className="paketHero__title">PAKET WISATA</h1>
+        <div className="paketHero__underline" />
       </section>
 
-      {/* Content */}
       <section className="paketSection">
         <div className="paketGrid">
-          {dummyPackages.map((p, index) => (
-            <Reveal
-              key={p.id}
-              delay={index * 100}
-              variant={index % 2 === 0 ? "left" : "right"}
-            >
+          {destinations.map((item, index) => (
+            <Reveal key={item.id} delay={index * 100}>
               <article className="paketCard">
-                <div className="paketCard__thumb">
-                  <button
-                    className="paketCard__fav"
-                    type="button"
-                    aria-label="favorit"
+              <div className="paketCard__thumb">
+                <img
+                  src={item.image_url}
+                  alt={item.name}
+                  className="paketCard__thumbImage"
+                />
+                <button
+                  className="paketCard__fav"
+                  type="button"
+                  aria-label="favorit"
+                >
+                  ☆
+                </button>
+              </div>
+
+              <div className="paketCard__body">
+                <div className="paketCard__metaTop">
+                  <div className="paketCard__paketNo">
+                    {item.category.name.toUpperCase()}
+                  </div>
+                  <div className="paketCard__title">{item.name}</div>
+                </div>
+
+                <div className="paketCard__metaMid">
+                  <div className="paketCard__line">{item.date}</div>
+                  <div className="paketCard__lineMuted">
+                    {item.start_time} - {item.end_time}
+                  </div>
+                </div>
+
+                <div className="paketCard__bottom">
+                  <div className="paketCard__price">
+                    <span className="paketCard__priceIcon">💚</span>
+                    {formatRupiah(item.price)}
+                  </div>
+
+                  <Link
+                    to={`/paket-wisata/${item.id}`}
+                    className="paketCard__btn"
                   >
-                    ☆
-                  </button>
+                    Selengkapnya
+                  </Link>
                 </div>
-
-                <div className="paketCard__body">
-                  <div className="paketCard__metaTop">
-                    <div className="paketCard__paketNo">{p.paketNo}</div>
-                    <div className="paketCard__title">{p.title}</div>
-                  </div>
-
-                  <div className="paketCard__metaMid">
-                    <div className="paketCard__line">{p.dateVenue}</div>
-                    <div className="paketCard__lineMuted">{p.time}</div>
-                  </div>
-
-                  <div className="paketCard__bottom">
-                    <div className="paketCard__price">
-                      <span className="paketCard__priceIcon">💚</span>
-                      {p.price}
-                    </div>
-
-                    <Link to={`/paket-wisata/${p.id}`} className="paketCard__btn">
-                      Selengkapnya
-                    </Link>
-                  </div>
-                </div>
-              </article>
+              </div>
+            </article>
             </Reveal>
           ))}
         </div>

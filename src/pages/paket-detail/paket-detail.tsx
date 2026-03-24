@@ -1,5 +1,9 @@
 import { useMemo, useState } from "react";
+import { useParams } from "react-router-dom";
+import { destinations } from "../../data/destinations";
+import Reveal from "../../components/reveal";
 import "./paket-detail.css";
+import logo from "../../assets/logo.png";
 
 type VisitorForm = {
   fullName: string;
@@ -7,8 +11,49 @@ type VisitorForm = {
   phone: string;
 };
 
+function formatRupiah(value: string | number) {
+  return `Rp ${Number(value).toLocaleString("id-ID")}`;
+}
+
+function formatDateIndonesia(dateString: string) {
+  return new Date(dateString).toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+function formatReceiptDate(date: Date) {
+  return date.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function formatReceiptDateTime(date: Date) {
+  const formattedDate = date.toLocaleDateString("id-ID", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+
+  const formattedTime = date.toLocaleTimeString("id-ID", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${formattedDate} ${formattedTime}`;
+}
+
 export default function PaketDetailPage() {
+  const { id } = useParams();
+  const destination = destinations.find((item) => item.id === Number(id));
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [orderId] = useState(() => `${Date.now()}`);
+  const [bookingTime] = useState(() => new Date());
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [qty, setQty] = useState(1);
   const [form, setForm] = useState<VisitorForm>({
@@ -17,26 +62,25 @@ export default function PaketDetailPage() {
     phone: "",
   });
 
+  if (!destination) {
+    return (
+      <div className="page">
+        <main className="paketDetail">
+          <section className="paketDetail__content container">
+            <h1 className="paketDetail__title">Data paket tidak ditemukan</h1>
+          </section>
+        </main>
+      </div>
+    );
+  }
+
   const ticketName = "Tiket Standard";
-  const eventTitle = "Kegiatan & Kerajinan";
-  const ticketPrice = 200000;
+  const eventTitle = destination.name;
+  const ticketPrice = Number(destination.price);
   const tax = 20000;
 
-  const total = useMemo(() => qty * ticketPrice, [qty]);
+  const total = useMemo(() => qty * ticketPrice, [qty, ticketPrice]);
   const grandTotal = useMemo(() => total + tax, [total]);
-
-  const getTodayDate = () => {
-    const today = new Date();
-
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    };
-
-    return today.toLocaleDateString("id-ID", options);
-  };
 
   const openModal = () => {
     setStep(1);
@@ -52,6 +96,11 @@ export default function PaketDetailPage() {
 
   const closeModal = () => {
     setIsModalOpen(false);
+    document.body.style.overflow = "auto";
+  };
+
+  const closeReceipt = () => {
+    setIsReceiptOpen(false);
     document.body.style.overflow = "auto";
   };
 
@@ -77,97 +126,113 @@ export default function PaketDetailPage() {
   };
 
   const handlePayNow = () => {
-    alert("Pembayaran dummy berhasil diproses 🎉");
-    closeModal();
+    setIsModalOpen(false);
+    setIsReceiptOpen(true);
   };
 
   return (
     <div className="page">
       <main className="paketDetail">
         <section className="paketDetail__hero">
-          <div className="paketDetail__heroImage">
-            <div className="paketDetail__heroPlaceholder">🖼</div>
-          </div>
+          <img
+            src={destination.image_url}
+            alt={destination.name}
+            className="paketDetail__heroImg"
+          />
         </section>
 
-        <section className="paketDetail__content container">
-          <div className="paketDetail__topRow">
-            <div>
-              <h1 className="paketDetail__title">Kegiatan &amp; Kerajinan</h1>
+        <section className="paketDetail__contentWrap">
+          <div className="paketDetail__content container">
+            <div className="paketDetail__main">
+              <div className="paketDetail__left">
+                <Reveal>
+                  <h1 className="paketDetail__title">{destination.name}</h1>
+                </Reveal>
+
+                <Reveal>
+                  <section className="paketDetail__section">
+                    <h2 className="paketDetail__heading">Date and Time</h2>
+
+                    <div className="paketDetail__infoItem">
+                      <span className="paketDetail__icon">🗓</span>
+                      <span>{formatDateIndonesia(destination.date)}</span>
+                    </div>
+
+                    <div className="paketDetail__infoItem">
+                      <span className="paketDetail__icon">🕒</span>
+                      <span>
+                        {destination.start_time} - {destination.end_time}
+                      </span>
+                    </div>
+                  </section>
+                </Reveal>
+
+                <Reveal>
+                  <section className="paketDetail__section">
+                  <h2 className="paketDetail__heading">Location 📍</h2>
+
+                    <div className="paketDetail__map">
+                      <iframe
+                        title="Lokasi Destinasi"
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        loading="lazy"
+                        allowFullScreen
+                        referrerPolicy="no-referrer-when-downgrade"
+                        src={`https://www.google.com/maps?q=${destination.latitude},${destination.longitude}&z=15&output=embed`}
+                      />
+                    </div>
+                  </section>
+                </Reveal>
+
+                <Reveal>
+                  <section className="paketDetail__section">
+                    <h2 className="paketDetail__heading">Ticket Information</h2>
+
+                    <div className="paketDetail__infoItem">
+                      <span className="paketDetail__icon">🎟</span>
+                      <span>
+                        {destination.ticket_type === "price_per_ticket"
+                          ? `Price / ticket: ${formatRupiah(destination.price)}`
+                          : destination.ticket_type}
+                      </span>
+                    </div>
+                  </section>
+                </Reveal>
+
+                <Reveal>
+                  <section className="paketDetail__section">
+                    <h2 className="paketDetail__heading">Event Description</h2>
+                    <p className="paketDetail__paragraph">
+                      {destination.descriptions}
+                    </p>
+                  </section>
+                </Reveal>
+              </div>
+
+              <aside className="paketDetail__right">
+                <Reveal variant="right">
+                  <button
+                    className="paketDetail__fav"
+                    type="button"
+                    aria-label="Favorit"
+                  >
+                    ☆
+                  </button>
+                </Reveal>
+
+                <Reveal variant="right">
+                  <button
+                    type="button"
+                    className="paketDetail__orderBtn"
+                    onClick={openModal}
+                  >
+                    🎟 Pesan Sekarang
+                  </button>
+                </Reveal>
+              </aside>
             </div>
-
-            <button
-              className="paketDetail__fav"
-              type="button"
-              aria-label="Favorit"
-            >
-              ☆
-            </button>
-          </div>
-
-          <div className="paketDetail__main">
-            <div className="paketDetail__left">
-              <section className="paketDetail__section">
-                <h2 className="paketDetail__heading">Date and Time</h2>
-
-                <div className="paketDetail__infoItem">
-                  <span className="paketDetail__icon">🗓</span>
-                  <span>{getTodayDate()}</span>
-                </div>
-
-                <div className="paketDetail__infoItem">
-                  <span className="paketDetail__icon">🕒</span>
-                  <span>Time</span>
-                </div>
-              </section>
-
-              <section className="paketDetail__section">
-                <h2 className="paketDetail__heading">Location</h2>
-
-                <div className="paketDetail__infoItem">
-                  <span className="paketDetail__icon">📍</span>
-                  <span>Address</span>
-                </div>
-
-                <div className="paketDetail__map">
-                  <div className="paketDetail__mapExpand">⤢</div>
-                  <div className="paketDetail__mapPin">📍</div>
-                  <div className="paketDetail__mapZoom">
-                    <button type="button">+</button>
-                    <button type="button">−</button>
-                  </div>
-                </div>
-              </section>
-
-              <section className="paketDetail__section">
-                <h2 className="paketDetail__heading">Ticket Information</h2>
-
-                <div className="paketDetail__infoItem">
-                  <span className="paketDetail__icon">🎟</span>
-                  <span>Ticket Type: Price /ticket</span>
-                </div>
-              </section>
-
-              <section className="paketDetail__section">
-                <h2 className="paketDetail__heading">Event Description</h2>
-
-                <p className="paketDetail__paragraph">
-                  Lorem ipsum dolor sit amet consectetur. Eget vulputate sociis
-                  sit urna sit aliquet. Vivamus facilisis diam libero dolor
-                  volutpat diam eu.
-                </p>
-              </section>
-            </div>
-
-            <aside className="paketDetail__right">
-              <button
-                type="button"
-                className="paketDetail__orderBtn"
-                onClick={openModal}
-              >
-                🎟 Pesan Sekarang
-              </button>
-            </aside>
           </div>
         </section>
       </main>
@@ -175,7 +240,6 @@ export default function PaketDetailPage() {
       {isModalOpen && (
         <div className="bookingModal__overlay" onClick={closeModal}>
           <div className="bookingModal" onClick={(e) => e.stopPropagation()}>
-            {/* STEP 1 */}
             {step === 1 && (
               <>
                 <div className="bookingModal__header">
@@ -200,7 +264,9 @@ export default function PaketDetailPage() {
                     <div className="ticketItem__content">
                       <div className="ticketItem__info">
                         <div className="ticketItem__name">{ticketName}</div>
-                        <div className="ticketItem__price">Rp 200.000,-</div>
+                        <div className="ticketItem__price">
+                          {formatRupiah(ticketPrice)}
+                        </div>
                       </div>
 
                       <div className="ticketQty">
@@ -224,7 +290,7 @@ export default function PaketDetailPage() {
                     <span>
                       Total:{" "}
                       <strong className="text-green">
-                        Rp {total.toLocaleString("id-ID")},-
+                        {formatRupiah(total)}
                       </strong>
                     </span>
                   </div>
@@ -241,7 +307,6 @@ export default function PaketDetailPage() {
               </>
             )}
 
-            {/* STEP 2 */}
             {step === 2 && (
               <>
                 <div className="bookingModal__header">
@@ -270,7 +335,9 @@ export default function PaketDetailPage() {
                         {ticketName}: Tiket #1
                       </div>
                     </div>
-                    <div className="visitorTop__date">📅 {getTodayDate()}</div>
+                    <div className="visitorTop__date">
+                      📅 {formatDateIndonesia(destination.date)}
+                    </div>
                   </div>
 
                   <div className="visitorFormCard">
@@ -322,11 +389,6 @@ export default function PaketDetailPage() {
                       </div>
                     </label>
                   </div>
-
-                  <p className="bookingTerms">
-                    I accept the <a href="#">Terms of Service</a> and have read
-                    the <a href="#">Privacy Policy</a>
-                  </p>
                 </div>
 
                 <div className="bookingModal__footer">
@@ -337,7 +399,7 @@ export default function PaketDetailPage() {
                     <span>
                       Total:{" "}
                       <strong className="text-green">
-                        Rp {total.toLocaleString("id-ID")}
+                        {formatRupiah(total)}
                       </strong>
                     </span>
                   </div>
@@ -353,7 +415,6 @@ export default function PaketDetailPage() {
               </>
             )}
 
-            {/* STEP 3 */}
             {step === 3 && (
               <>
                 <div className="bookingModal__header">
@@ -389,7 +450,9 @@ export default function PaketDetailPage() {
                           {form.email}
                         </div>
                       </div>
-                      <div className="ticketSummaryCard__badge">Rp.200.000</div>
+                      <div className="ticketSummaryCard__badge">
+                        {formatRupiah(ticketPrice)}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -398,17 +461,17 @@ export default function PaketDetailPage() {
                   <div className="paymentSummary">
                     <div className="paymentSummary__row">
                       <span>Sub Total:</span>
-                      <strong>Rp {total.toLocaleString("id-ID")}</strong>
+                      <strong>{formatRupiah(total)}</strong>
                     </div>
                     <div className="paymentSummary__row">
                       <span>Tax:</span>
-                      <strong>Rp {tax.toLocaleString("id-ID")}</strong>
+                      <strong>{formatRupiah(tax)}</strong>
                     </div>
                     <div className="paymentSummary__divider" />
                     <div className="paymentSummary__row paymentSummary__row--grand">
                       <span>Order Total:</span>
                       <strong className="text-green">
-                        Rp.{grandTotal.toLocaleString("id-ID")}
+                        {formatRupiah(grandTotal)}
                       </strong>
                     </div>
                   </div>
@@ -423,6 +486,123 @@ export default function PaketDetailPage() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+      {isReceiptOpen && (
+        <div className="receiptModal__overlay" onClick={closeReceipt}>
+          <div className="receiptModal" onClick={(e) => e.stopPropagation()}>
+            <div className="receiptModal__header">
+              <button
+                type="button"
+                className="receiptModal__close"
+                onClick={closeReceipt}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="receiptModal__logoWrap">
+              <img className="receipt__logo" src={logo} alt="Logo" />
+            </div>
+
+            <h1 className="receiptModal__title">Bukti Pembayaran Tiket</h1>
+
+            <div className="receiptModal__meta">
+              <div className="receiptModal__date">
+                {formatReceiptDate(bookingTime)}
+              </div>
+              <div className="receiptModal__orderId">Order ID: {orderId}</div>
+            </div>
+
+            <div className="receiptTicket">
+              <div className="receiptTicket__topLine" />
+
+              <div className="receiptTicket__type">{ticketName}</div>
+
+              <div className="receiptTicket__content">
+                <div className="receiptTicket__left">
+                  <div className="receiptTicket__destination">
+                    {destination.name}
+                  </div>
+                  <div className="receiptTicket__visitor">{form.fullName}</div>
+                  <div className="receiptTicket__visitor">{form.email}</div>
+                  <div className="receiptTicket__visitor">{form.phone}</div>
+                </div>
+
+                <div className="receiptTicket__qrWrap">
+                  <img
+                    className="receiptTicket__qr"
+                    alt="QR Code Tiket"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                      JSON.stringify({
+                        orderId,
+                        destination: destination.name,
+                        visitor: form.fullName,
+                        email: form.email,
+                        phone: form.phone,
+                        qty,
+                        total: grandTotal,
+                      }),
+                    )}`}
+                  />
+                </div>
+              </div>
+
+              <div className="receiptTicket__bottomLine" />
+            </div>
+
+            <div className="receiptModal__infoRow">
+              <div>
+                <div className="receiptModal__label">Metode Pembayaran</div>
+                <div className="receiptModal__label">Waktu Pemesanan</div>
+              </div>
+
+              <div className="receiptModal__infoRight">
+                <div className="receiptModal__paymentMethod">BCA</div>
+                <div className="receiptModal__bookingTime">
+                  {formatReceiptDateTime(bookingTime)}
+                </div>
+              </div>
+            </div>
+
+            <div className="receiptModal__summaryWrap">
+              <div className="receiptSummary">
+                <div className="receiptSummary__row">
+                  <span>Sub Total:</span>
+                  <strong>{formatRupiah(total)}</strong>
+                </div>
+
+                <div className="receiptSummary__row">
+                  <span>Tax:</span>
+                  <strong>{formatRupiah(tax)}</strong>
+                </div>
+
+                <div className="receiptSummary__divider" />
+
+                <div className="receiptSummary__row receiptSummary__row--grand">
+                  <span>Order Total:</span>
+                  <strong className="text-green">
+                    {formatRupiah(grandTotal)}
+                  </strong>
+                </div>
+              </div>
+            </div>
+
+            <p className="receiptModal__note">
+              Struk ini merupakan bukti sah pembelian tiket dan wajib disimpan
+              oleh pelanggan. Tiket hanya berlaku sesuai dengan detail yang
+              tertera (tanggal, waktu, dan tujuan) serta tidak dapat dipindah
+              tangankan tanpa persetujuan. Perubahan atau pembatalan tiket dapat
+              dikenakan biaya sesuai kebijakan yang berlaku, dan beberapa tiket
+              mungkin tidak dapat dikembalikan (non-refundable). Keterlambatan
+              atau ketidakhadiran penumpang dapat dianggap sebagai pembatalan
+              tanpa pengembalian dana. Penyedia layanan tidak bertanggung jawab
+              atas gangguan yang disebabkan oleh keadaan di luar kendali (force
+              majeure). Dengan melakukan pembelian, pelanggan dianggap telah
+              membaca, memahami, dan menyetujui seluruh syarat dan ketentuan
+              ini.
+            </p>
           </div>
         </div>
       )}

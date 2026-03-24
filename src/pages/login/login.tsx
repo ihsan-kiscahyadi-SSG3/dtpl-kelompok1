@@ -1,31 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "./login.css";
 import logo from "../../assets/logo.png";
-
-type User = {
-  name: string;
-  email: string;
-  password: string;
-};
-
-const USERS_KEY = "dummy_users";
-const SESSION_KEY = "dummy_session";
-
-function getUsers(): User[] {
-  const raw = localStorage.getItem(USERS_KEY);
-  return raw ? (JSON.parse(raw) as User[]) : [];
-}
-
-function seedDefaultUserIfEmpty() {
-  const users = getUsers();
-  if (users.length > 0) return;
-
-  const seeded: User[] = [
-    { name: "Demo User", email: "demo@mail.com", password: "123456" },
-  ];
-  localStorage.setItem(USERS_KEY, JSON.stringify(seeded));
-}
+import { loginUser } from "../../services/api";
+import { setSession } from "../../utils/auth";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -34,25 +12,22 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    seedDefaultUserIfEmpty();
-  }, []);
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
+    setLoading(true);
 
-    const users = getUsers();
-    const ok = users.some((u) => u.email === email && u.password === password);
-
-    if (!ok) {
-      setError("Email atau kata sandi salah.");
-      return;
+    try {
+      const res = await loginUser({ email, password });
+      setSession({ ...res, email: res.email ?? email, password });
+      navigate("/");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Email atau kata sandi salah.");
+    } finally {
+      setLoading(false);
     }
-
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ email }));
-    navigate("/");
   };
 
   return (
@@ -121,19 +96,14 @@ export default function Login() {
 
             {error && <div className="formError">{error}</div>}
 
-            <button className="loginBtn" type="submit">
-              Masuk
+            <button className="loginBtn" type="submit" disabled={loading}>
+              {loading ? "Memproses..." : "Masuk"}
             </button>
 
             <div className="loginHint">
               Belum punya akun? <Link className="link" to="/register">Daftar</Link>
             </div>
 
-            <div className="loginHint" style={{ marginTop: 2 }}>
-              <span style={{ opacity: 0.85 }}>
-                Demo: <b>demo@mail.com</b> / <b>123456</b>
-              </span>
-            </div>
           </form>
         </div>
       </section>

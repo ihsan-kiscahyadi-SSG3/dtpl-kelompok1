@@ -1,10 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getSessionUser, updateUser } from "../../utils/auth";
 
 export default function ProfileInfo() {
-  const user = getSessionUser();
-  const [name, setName] = useState(user?.name || "");
-  const [phone, setPhone] = useState(user?.phone || "");
+  const [user, setUser] = useState<Awaited<ReturnType<typeof getSessionUser>>>(null);
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const sessionUser = await getSessionUser();
+      setUser(sessionUser);
+      setName(sessionUser?.name || "");
+      setPhone(sessionUser?.phone || "");
+      setLoading(false);
+    };
+
+    void loadUser();
+  }, []);
+
+  if (loading) return <p>Loading...</p>;
 
   if (!user) return <p>Unauthorized</p>;
 
