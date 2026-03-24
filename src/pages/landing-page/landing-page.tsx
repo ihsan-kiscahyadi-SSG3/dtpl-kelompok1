@@ -41,37 +41,10 @@ const categories: Category[] = [
   },
 ];
 
-const popularEvents = [
-  {
-    tag: "Kerajinan",
-    title: "Temukan Kerajinan Desa",
-  },
-  {
-    tag: "Kesenian & Budaya",
-    title: "Nikmati Kesenian & Budaya",
-  },
-  {
-    tag: "Atraksi",
-    title: "Pesona Alam Desa",
-  },
-  {
-    tag: "Atraksi",
-    title: "Jelajahi Sejarah & Budaya",
-  },
-  {
-    tag: "Kulineran",
-    title: "Lezatnya Kuliner Desa",
-  },
-  {
-    tag: "Keliling Desa",
-    title: "Temukan pesona setiap sudut desa",
-  },
-];
-
 export default function Home() {
-  const [activeCategory, setActiveCategory] = useState<string>("Semua");
+  const [activeCategory, setActiveCategory] = useState<string>("");
   const filteredDestinations = useMemo(() => {
-    if (activeCategory === "Semua") {
+    if (!activeCategory) {
       return destinations;
     }
 
@@ -124,21 +97,8 @@ export default function Home() {
         </Reveal>
 
         <div className="categories">
-          <Reveal delay={0}>
-            <button
-              className={`cat ${activeCategory === "Semua" ? "cat--active" : ""}`}
-              type="button"
-              onClick={() => setActiveCategory("Semua")}
-            >
-              <div className="cat__circle" aria-hidden="true">
-                <div className="cat__all">All</div>
-              </div>
-              <div className="cat__label">Semua</div>
-            </button>
-          </Reveal>
-
           {categories.map((c, index) => (
-            <Reveal key={c.label} delay={(index + 1) * 100}>
+            <Reveal key={c.label} delay={index * 100}>
               <button
                 className={`cat ${activeCategory === c.label ? "cat--active" : ""}`}
                 type="button"
@@ -167,7 +127,7 @@ export default function Home() {
               <span className="popular__subtitle">Popular events</span>
               <h2 className="popular__title">
                 Kegiatan Populer
-                {activeCategory !== "Semua" ? ` - ${activeCategory}` : ""}
+                {activeCategory ? ` - ${activeCategory}` : ""}
               </h2>
             </div>
           </Reveal>
@@ -227,7 +187,7 @@ export default function Home() {
             ) : (
               <Reveal>
                 <div className="emptyState">
-                  Belum ada destinasi untuk kategori {activeCategory}.
+                  Belum ada destinasi{activeCategory ? ` untuk kategori ${activeCategory}` : ""}.
                 </div>
               </Reveal>
             )}
