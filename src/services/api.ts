@@ -1,4 +1,7 @@
-const API_BASE_URL = "https://manudjaya-api.arthurringo.com";
+const API_BASE_URL =
+  import.meta.env.MODE === "production"
+    ? "https://manudjaya-api.arthurringo.com"
+    : "/api";
 
 type ApiError = {
   error?: string;
