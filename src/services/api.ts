@@ -1,6 +1,6 @@
 const API_BASE_URL =
   import.meta.env.MODE === "production"
-    ? "https://manudjaya-api.arthurringo.com"
+    ? "https://api.desamanudjaya.com"
     : "/api";
 
 type ApiError = {
