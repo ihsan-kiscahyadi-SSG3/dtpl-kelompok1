@@ -1,6 +1,7 @@
 import { Link, useNavigate, NavLink } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import logo from "../assets/logo.png";
+import {logoutUser} from "../services/api.ts";
 
 const SESSION_KEY = "dummy_session";
 
@@ -32,11 +33,12 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  const logout = () => {
-    clearSession();
-    setSession(null);
-    setOpen(false);
-    navigate("/");
+  const logout = async () => {
+      await logoutUser()
+      clearSession();
+      setSession(null);
+      setOpen(false);
+      navigate("/");
   };
 
   return (
