@@ -54,7 +54,7 @@ function formatReceiptDateTime(date: Date) {
 
 export default function PaketDetailPage() {
   const { id } = useParams();
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
 
   const [destination, setDestination] = useState<DestinationDetail | null>(null);
