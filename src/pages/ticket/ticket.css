@@ -1,0 +1,278 @@
+/* ── Ticket Page (standalone, print-friendly) ── */
+
+.ticketPage {
+  min-height: 100vh;
+  background: #f0f2f5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 16px 24px;
+  font-family: inherit;
+}
+
+.ticketPage__card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.13);
+}
+
+/* ── Header ── */
+.ticketPage__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1e3a5f;
+  padding: 18px 20px;
+  color: #fff;
+}
+
+.ticketPage__headerLogo {
+  font-size: 30px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ticketPage__headerInfo {
+  flex: 1;
+}
+
+.ticketPage__headerName {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.ticketPage__headerSub {
+  font-size: 11px;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.ticketPage__headerBadge {
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  flex-shrink: 0;
+}
+
+/* ── Title strip ── */
+.ticketPage__titleStrip {
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+}
+
+.ticketPage__titleStrip--paid    { background: #1e8449; }
+.ticketPage__titleStrip--pending { background: #d97706; }
+
+/* ── Booking section ── */
+.ticketPage__bookingSection {
+  padding: 20px 20px 16px;
+  text-align: center;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ticketPage__bookingLabel {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #9ca3af;
+  margin-bottom: 6px;
+}
+
+.ticketPage__bookingCode {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: #374151;
+}
+
+.ticketPage__bookingCode--paid {
+  color: #1e8449;
+}
+
+/* ── Tear / Perforation ── */
+.ticketPage__tear {
+  display: flex;
+  align-items: center;
+  margin: 0 -1px;
+  position: relative;
+}
+
+.ticketPage__tearHole {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #f0f2f5;
+  flex-shrink: 0;
+}
+
+.ticketPage__tearHole--left  { margin-left: -11px; }
+.ticketPage__tearHole--right { margin-right: -11px; }
+
+.ticketPage__tearLine {
+  flex: 1;
+  border-top: 2px dashed #e5e7eb;
+  margin: 0 4px;
+}
+
+/* ── Item details ── */
+.ticketPage__detail {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ticketPage__detailRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 5px 0;
+}
+
+.ticketPage__detailLabel {
+  font-size: 12px;
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.ticketPage__detailValue {
+  font-size: 13px;
+  color: #374151;
+  text-align: right;
+}
+
+/* ── Pricing ── */
+.ticketPage__pricing {
+  padding: 14px 20px 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ticketPage__pricingRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #6b7280;
+  padding: 4px 0;
+}
+
+.ticketPage__pricingDivider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 8px 0;
+}
+
+.ticketPage__pricingRow--total {
+  font-size: 15px;
+  color: #111827;
+  padding-top: 4px;
+}
+
+.ticketPage__pricingRow--total strong {
+  color: #1e8449;
+  font-size: 17px;
+}
+
+/* ── Unpaid note ── */
+.ticketPage__unpaidNote {
+  margin: 0 20px 16px;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #92400e;
+}
+
+/* ── Footer ── */
+.ticketPage__footer {
+  background: #f9fafb;
+  padding: 14px 20px;
+  text-align: center;
+}
+
+.ticketPage__footer p {
+  margin: 0 0 3px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.ticketPage__footerDate {
+  font-size: 11px !important;
+  color: #d1d5db !important;
+}
+
+.ticketPage__footerContact {
+  font-size: 11px !important;
+  color: #d1d5db !important;
+}
+
+/* ── Loading / Error ── */
+.ticketPage__loading,
+.ticketPage__errorMsg {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.ticketPage__errorMsg { color: #b91c1c; }
+
+/* ── Print button ── */
+.ticketPage__printWrap {
+  margin-top: 20px;
+}
+
+.ticketPage__printBtn {
+  background: #1e3a5f;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.ticketPage__printBtn:hover {
+  background: #163257;
+}
+
+/* ── Print styles ── */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+    margin: 0;
+    padding: 0;
+  }
+
+  .ticketPage {
+    background: #fff;
+    padding: 0;
+    display: block;
+  }
+
+  .ticketPage__card {
+    box-shadow: none;
+    border-radius: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .ticketPage__tearHole {
+    background: #fff;
+  }
+}

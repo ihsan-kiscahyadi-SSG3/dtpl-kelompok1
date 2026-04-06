@@ -268,6 +268,7 @@ export type OrderVisitorDetail = {
 
 export type OrderResponse = {
   id: number;
+  booking_code?: string;
   user_id: number;
   user_name: string;
   qty: number;
@@ -275,6 +276,8 @@ export type OrderResponse = {
   tax: string;
   sub_total: string;
   status: string;
+  payment_qr_url?: string | null;
+  ticket_qr_url?: string | null;
   order_item: {
     id: number;
     name: string;
@@ -287,6 +290,27 @@ export type OrderResponse = {
     category_name: string;
   };
   order_visitor_details: OrderVisitorDetail[];
+};
+
+export type CheckPaymentStatusResponse = {
+  id: number;
+  booking_code: string;
+  status: string;
+  qr_url?: string | null;
+  ticket_url?: string | null;
+};
+
+export type PaymentPageDetails = {
+  id?: number;
+  booking_code: string;
+  status: string;
+  item_name: string;
+  item_type: string;
+  qty: number;
+  sub_total: string;
+  tax: string;
+  total_amount: string;
+  payment_qr_url?: string | null;
 };
 
 // CREATE ORDER
@@ -314,6 +338,28 @@ export async function payNowOrder(orderId: number) {
   return apiFetch<OrderResponse>(`/order/${orderId}/pay_now`, {
     method: "POST",
   });
+}
+
+// CHECK PAYMENT STATUS
+export async function checkPaymentStatus(orderId: number) {
+  return apiFetch<CheckPaymentStatusResponse>(
+    `/order/${orderId}/check_payment_status`
+  );
+}
+
+// MARK ORDER PAID (dummy payment integration)
+export async function markOrderPaid(orderId: number) {
+  return apiFetch<OrderResponse>(`/order/${orderId}/paid`, { method: "POST" });
+}
+
+// CANCEL ORDER (dummy payment integration)
+export async function cancelOrder(orderId: number) {
+  return apiFetch<OrderResponse>(`/order/${orderId}/cancel`, { method: "POST" });
+}
+
+// GET PAYMENT PAGE DETAILS (public, no auth needed)
+export async function getPaymentDetails(bookingCode: string) {
+  return apiFetch<PaymentPageDetails>(`/payment/${bookingCode}`);
 }
 
 /* =========================
@@ -367,6 +413,7 @@ export type OrderHistoryItem = {
   created_at: string;
   updated_at: string;
   order_item: {
+    type?: string;
     id: number;
     name: string;
     date: string;
@@ -376,6 +423,7 @@ export type OrderHistoryItem = {
     price: string;
     category_id: number;
     category_name: string;
+    facilities?: string[];
   };
   visitor_details: OrderVisitorDetail[];
 };

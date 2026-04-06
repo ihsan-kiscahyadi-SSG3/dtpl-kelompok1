@@ -129,6 +129,38 @@
   color: #1b5e20;
 }
 
+.orderHistory__ticketBtn {
+  background: #1e8449;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 6px;
+  margin-left: 12px;
+}
+
+.orderHistory__ticketBtn:hover {
+  background: #196f3d;
+}
+
+.orderHistory__payBtn {
+  background: #f59e0b;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  padding: 5px 12px;
+  border-radius: 6px;
+  margin-left: 12px;
+}
+
+.orderHistory__payBtn:hover {
+  background: #d97706;
+}
+
 .orderHistory__topRow {
   display: flex;
   align-items: center;

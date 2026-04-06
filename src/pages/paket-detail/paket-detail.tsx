@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import {
   getDestinationById,
@@ -6,6 +6,7 @@ import {
   updateOrder,
   createOrderVisitorDetails,
   payNowOrder,
+  checkPaymentStatus,
   getOrderHistory,
   getWishlists,
   addWishlist,
@@ -69,7 +70,9 @@ export default function PaketDetailPage() {
   const { isLoggedIn } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const resumeOrder = (location.state as { resumeOrder?: OrderHistoryItem } | null)?.resumeOrder;
+  const locationState = location.state as { resumeOrder?: OrderHistoryItem; openPayment?: OrderHistoryItem } | null;
+  const resumeOrder   = locationState?.resumeOrder;
+  const openPayment   = locationState?.openPayment;
 
   // ── destination data ──
   const [destination, setDestination] = useState<DestinationDetail | null>(null);
@@ -81,8 +84,13 @@ export default function PaketDetailPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [paymentDeadline, setPaymentDeadline] = useState<number | null>(null);
-  const [timeLeft, setTimeLeft] = useState(15 * 60);
+  const [timeLeft, setTimeLeft] = useState(10 * 60);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [isPaidOpen, setIsPaidOpen] = useState(false);
+  const [isFailedOpen, setIsFailedOpen] = useState(false);
+  const [ticketUrl, setTicketUrl] = useState<string | null>(null);
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const autoCheckedRef = useRef(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
@@ -307,12 +315,87 @@ export default function PaketDetailPage() {
     setStep(3);
   };
 
-  const handleCheckPaymentStatus = () => {
-    // nanti kalau sudah ada API cek status pembayaran,
-    // logic-nya bisa diganti di sini
-    setIsPaymentOpen(false);
-    setIsReceiptOpen(true);
+  const doCheckPaymentStatus = async (isTimeout = false) => {
+    if (!orderData) return;
+    setCheckingPayment(true);
+    try {
+      const res = await checkPaymentStatus(orderData.id);
+      // Always update QR with latest from server
+      if (res.qr_url) {
+        setOrderData((prev) => prev ? { ...prev, payment_qr_url: res.qr_url } : prev);
+      }
+      if (res.status.toLowerCase() === "paid") {
+        setTicketUrl(res.ticket_url ?? null);
+        setIsPaymentOpen(false);
+        setIsPaidOpen(true);
+        document.body.style.overflow = "hidden";
+      } else if (
+        res.status.toLowerCase() === "failed" ||
+        res.status.toLowerCase() === "cancelled" ||
+        isTimeout // backend may not have processed the job yet — treat timeout as failed
+      ) {
+        setIsPaymentOpen(false);
+        setIsFailedOpen(true);
+        document.body.style.overflow = "hidden";
+      }
+    } catch {
+      // On timeout, show failed even if the API call itself fails
+      if (isTimeout) {
+        setIsPaymentOpen(false);
+        setIsFailedOpen(true);
+        document.body.style.overflow = "hidden";
+      }
+    } finally {
+      setCheckingPayment(false);
+    }
   };
+
+  const handleCheckPaymentStatus = () => { doCheckPaymentStatus(false); };
+
+  // Open payment modal directly for waiting_for_payment orders from riwayat-pesanan
+  useEffect(() => {
+    if (!openPayment || loading) return;
+
+    const fakeOrder: OrderResponse = {
+      id: openPayment.id,
+      booking_code: openPayment.booking_code,
+      user_id: 0,
+      user_name: "",
+      qty: openPayment.qty,
+      order_total: openPayment.order_total,
+      tax: openPayment.tax,
+      sub_total: openPayment.sub_total,
+      status: openPayment.status,
+      payment_qr_url: undefined,
+      order_item: openPayment.order_item,
+      order_visitor_details: openPayment.visitor_details,
+    };
+
+    const deadline = new Date(openPayment.updated_at).getTime() + 10 * 60 * 1000;
+    const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+
+    setOrderData(fakeOrder);
+    setQty(openPayment.qty);
+    setPaymentDeadline(deadline);
+    setTimeLeft(remaining);
+    navigate(location.pathname, { replace: true, state: null });
+    setIsPaymentOpen(true);
+    document.body.style.overflow = "hidden";
+  }, [openPayment, loading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Auto-check payment status when 10-min timer expires
+  useEffect(() => {
+    if (timeLeft === 0 && isPaymentOpen && !autoCheckedRef.current) {
+      autoCheckedRef.current = true;
+      doCheckPaymentStatus(true);
+    }
+  }, [timeLeft, isPaymentOpen]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reset auto-check flag when payment modal opens
+  useEffect(() => {
+    if (isPaymentOpen) autoCheckedRef.current = false;
+  }, [isPaymentOpen]);
+
   // ── back handlers ──
   const backToStep1 = () => {
     setApiError("");
@@ -675,60 +758,77 @@ export default function PaketDetailPage() {
         <div className="paymentModal__overlay" onClick={closePayment}>
           <div className="paymentModal" onClick={(e) => e.stopPropagation()}>
             <div className="paymentModal__header">
-              <button
-                type="button"
-                className="paymentModal__back"
-                onClick={backToSummaryFromPayment}
-              >
-                ←
-              </button>
+              <button type="button" className="paymentModal__back" onClick={backToSummaryFromPayment}>←</button>
               <h2 className="paymentModal__title">Pembayaran</h2>
             </div>
 
             <div className="paymentModal__orderId">
-              Order ID: <strong>{orderData.id}</strong>
+              Kode Booking: <strong>{orderData.booking_code ?? `ORD-${String(orderData.id).padStart(8, "0")}`}</strong>
             </div>
 
             <div className="paymentModal__timerBox">
               <span className="paymentModal__timerIcon">⏰</span>
-              <span>
-                Silakan selesaikan pembayaranmu dalam{" "}
-                <strong>{formatCountdown(timeLeft)}</strong>
-              </span>
+              <span>Selesaikan pembayaran dalam <strong>{formatCountdown(timeLeft)}</strong></span>
             </div>
 
             <div className="paymentModal__qrCard">
-              <div className="paymentModal__qrTitle">
-                Gunakan aplikasi pembayaran kamu untuk scan QR Code berikut
-              </div>
-
+              <div className="paymentModal__qrTitle">Scan QR Code untuk membayar</div>
               <img
                 className="paymentModal__qrImage"
                 alt="QR Code Pembayaran"
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-                  JSON.stringify({
-                    orderId: orderData.id,
-                    destination: destination.name,
-                    qty,
-                    total: grandTotal,
-                    paymentMethod: "QRIS",
-                  })
-                )}`}
+                src={
+                  orderData.payment_qr_url ??
+                  `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                    `${window.location.origin}/payment/${orderData.booking_code ?? orderData.id}`
+                  )}`
+                }
               />
+            </div>
+
+            {/* Order summary */}
+            <div className="paymentModal__summary">
+              <div className="paymentModal__summaryRow">
+                <span>Item</span>
+                <strong>{orderData.order_item.name}</strong>
+              </div>
+              <div className="paymentModal__summaryRow">
+                <span>Tanggal</span>
+                <strong>{new Date(orderData.order_item.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</strong>
+              </div>
+              <div className="paymentModal__summaryRow">
+                <span>Waktu</span>
+                <strong>{orderData.order_item.start_time} – {orderData.order_item.end_time}</strong>
+              </div>
+              <div className="paymentModal__summaryRow">
+                <span>Jumlah Tiket</span>
+                <strong>{orderData.qty} Tiket</strong>
+              </div>
+              <div className="paymentModal__summaryDivider" />
+              <div className="paymentModal__summaryRow">
+                <span>Sub Total</span>
+                <span>{formatRupiah(orderData.sub_total)}</span>
+              </div>
+              <div className="paymentModal__summaryRow">
+                <span>Pajak (10%)</span>
+                <span>{formatRupiah(orderData.tax)}</span>
+              </div>
+              <div className="paymentModal__summaryRow paymentModal__summaryRow--total">
+                <span>Total Pembayaran</span>
+                <strong className="text-green">{formatRupiah(orderData.order_total)}</strong>
+              </div>
             </div>
 
             <button
               type="button"
               className="paymentModal__checkBtn"
               onClick={handleCheckPaymentStatus}
-              disabled={timeLeft === 0}
+              disabled={checkingPayment || timeLeft === 0}
             >
-              {timeLeft === 0 ? "Waktu Pembayaran Habis" : "Cek Status Pembayaran"}
+              {checkingPayment ? "Mengecek..." : timeLeft === 0 ? "Waktu Pembayaran Habis" : "Cek Status Pembayaran"}
             </button>
 
             <div className="paymentModal__infoBox">
               <div className="paymentModal__infoIcon">!</div>
-
               <ul className="paymentModal__infoList">
                 <li>Buka aplikasi pembayaran (e-wallet atau mobile banking).</li>
                 <li>Scan QR Code yang ditampilkan pada halaman ini.</li>
@@ -738,6 +838,116 @@ export default function PaketDetailPage() {
           </div>
         </div>
       )}
+      {/* ── PAID MODAL ── */}
+      {isPaidOpen && orderData && (
+        <div className="resultModal__overlay" onClick={() => { setIsPaidOpen(false); document.body.style.overflow = "auto"; }}>
+          <div className="resultModal resultModal--paid" onClick={(e) => e.stopPropagation()}>
+            <div className="resultModal__hero resultModal__hero--paid">
+              <div className="resultModal__icon">✓</div>
+              <h2 className="resultModal__heroTitle">Pembayaran Berhasil!</h2>
+              <p className="resultModal__heroSub">Terima kasih atas kepercayaan Anda kepada Desa Wisata Manud Jaya</p>
+            </div>
+
+            <div className="resultModal__body">
+              <div className="resultModal__bookingBox resultModal__bookingBox--paid">
+                <div className="resultModal__bookingLabel">KODE BOOKING</div>
+                <div className="resultModal__bookingCode">
+                  {orderData.booking_code ?? `ORD-${String(orderData.id).padStart(8, "0")}`}
+                </div>
+              </div>
+
+              <div className="resultModal__section">
+                <div className="resultModal__sectionTitle">Ringkasan Pesanan</div>
+                <div className="resultModal__row"><span>Item</span><strong>{orderData.order_item.name}</strong></div>
+                <div className="resultModal__row"><span>Tanggal</span><strong>{new Date(orderData.order_item.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</strong></div>
+                <div className="resultModal__row"><span>Waktu</span><strong>{orderData.order_item.start_time} – {orderData.order_item.end_time}</strong></div>
+                <div className="resultModal__row"><span>Jumlah Tiket</span><strong>{orderData.qty} Tiket</strong></div>
+                <div className="resultModal__divider" />
+                <div className="resultModal__row"><span>Sub Total</span><span>{formatRupiah(orderData.sub_total)}</span></div>
+                <div className="resultModal__row"><span>Pajak (10%)</span><span>{formatRupiah(orderData.tax)}</span></div>
+                <div className="resultModal__row resultModal__row--grand"><span>Total Pembayaran</span><strong className="text-green">{formatRupiah(orderData.order_total)}</strong></div>
+              </div>
+
+              <div className="resultModal__ticketNote">
+                <span>🎟</span>
+                <div>
+                  <strong>Tiket Anda telah dikirim!</strong>
+                  <p>Cek email berikutnya untuk tiket Anda yang berisi QR code untuk masuk ke destinasi.</p>
+                </div>
+              </div>
+
+              {orderData && (
+                <button
+                  type="button"
+                  className="resultModal__ticketBtn"
+                  onClick={() => navigate(`/ticket/${orderData.booking_code ?? `ORD-${String(orderData.id).padStart(8, "0")}`}`)}
+                >
+                  🎟 Lihat Tiket
+                </button>
+              )}
+
+              <button type="button" className="resultModal__closeBtn" onClick={() => { setIsPaidOpen(false); document.body.style.overflow = "auto"; }}>
+                Selesai
+              </button>
+
+              <p className="resultModal__support">
+                Untuk bantuan, hubungi kami di <a href="mailto:noreply@desamanudjaya.com">noreply@desamanudjaya.com</a>. Email ini dikirim secara otomatis, harap tidak membalas email ini.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── FAILED MODAL ── */}
+      {isFailedOpen && orderData && (
+        <div className="resultModal__overlay" onClick={() => { setIsFailedOpen(false); document.body.style.overflow = "auto"; }}>
+          <div className="resultModal resultModal--failed" onClick={(e) => e.stopPropagation()}>
+            <div className="resultModal__hero resultModal__hero--failed">
+              <div className="resultModal__icon">✕</div>
+              <h2 className="resultModal__heroTitle">Pembayaran Gagal</h2>
+              <p className="resultModal__heroSub">Waktu pembayaran telah habis</p>
+            </div>
+
+            <div className="resultModal__body">
+              <div className="resultModal__bookingBox resultModal__bookingBox--failed">
+                <div className="resultModal__bookingLabel">KODE BOOKING</div>
+                <div className="resultModal__bookingCode resultModal__bookingCode--failed">
+                  {orderData.booking_code ?? `ORD-${String(orderData.id).padStart(8, "0")}`}
+                </div>
+              </div>
+
+              <p className="resultModal__failedMsg">
+                Hai <strong>{orderData.user_name || "Pengguna"}</strong>,
+              </p>
+              <p className="resultModal__failedDesc">
+                Pesanan Anda dengan kode <strong>{orderData.booking_code ?? orderData.id}</strong> untuk{" "}
+                <strong>{orderData.order_item.name}</strong> telah dibatalkan karena pembayaran tidak diselesaikan dalam waktu yang ditentukan (10 menit).
+              </p>
+
+              <div className="resultModal__retryNote">
+                📌 Ingin memesan lagi? Silakan buat pesanan baru melalui aplikasi kami. Ketersediaan slot terbatas.
+              </div>
+
+              <div className="resultModal__section">
+                <div className="resultModal__sectionTitle">Detail Pesanan</div>
+                <div className="resultModal__row"><span>Item</span><strong>{orderData.order_item.name}</strong></div>
+                <div className="resultModal__row"><span>Tanggal</span><strong>{new Date(orderData.order_item.date).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}</strong></div>
+                <div className="resultModal__row"><span>Jumlah Tiket</span><strong>{orderData.qty} Tiket</strong></div>
+                <div className="resultModal__row"><span>Total</span><strong>{formatRupiah(orderData.order_total)}</strong></div>
+              </div>
+
+              <button type="button" className="resultModal__closeBtn resultModal__closeBtn--failed" onClick={() => { setIsFailedOpen(false); document.body.style.overflow = "auto"; }}>
+                Tutup
+              </button>
+
+              <p className="resultModal__support">
+                Untuk bantuan, hubungi kami di <a href="mailto:noreply@desamanudjaya.com">noreply@desamanudjaya.com</a>. Email ini dikirim secara otomatis.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── RECEIPT MODAL ── */}
       {isReceiptOpen && orderData && (
         <div className="receiptModal__overlay" onClick={closeReceipt}>

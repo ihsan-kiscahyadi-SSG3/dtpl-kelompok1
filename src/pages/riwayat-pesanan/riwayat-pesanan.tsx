@@ -4,8 +4,10 @@ import { getOrderHistories, getOrderHistory } from "../../services/api";
 import type { OrderHistoryItem } from "../../services/api";
 import "./riwayat-pesanan.css";
 
-const FALLBACK_IMAGE =
+const FALLBACK_DESTINATION =
   "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=600&auto=format&fit=crop";
+const FALLBACK_ACCOMMODATION =
+  "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?q=80&w=600&auto=format&fit=crop";
 
 function formatRupiah(value: string | number) {
   return `Rp. ${Number(value).toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -59,9 +61,19 @@ export default function RiwayatPesananPage() {
   }, [keyword, orders]);
 
   const handleResume = (order: OrderHistoryItem) => {
-    navigate(`/paket-wisata/${order.order_item.id}`, {
-      state: { resumeOrder: order },
-    });
+    if (order.order_item.type === "accommodation") {
+      navigate("/penginapan", { state: { resumeOrder: order } });
+    } else {
+      navigate(`/paket-wisata/${order.order_item.id}`, { state: { resumeOrder: order } });
+    }
+  };
+
+  const handleContinuePayment = (order: OrderHistoryItem) => {
+    if (order.order_item.type === "accommodation") {
+      navigate("/penginapan", { state: { openPayment: order } });
+    } else {
+      navigate(`/paket-wisata/${order.order_item.id}`, { state: { openPayment: order } });
+    }
   };
 
   const handleToggleDetail = async (order: OrderHistoryItem) => {
@@ -139,6 +151,24 @@ export default function RiwayatPesananPage() {
                         Lanjutkan Pesanan →
                       </button>
                     )}
+                    {statusClass(order.status) === "paid" && (
+                      <button
+                        type="button"
+                        className="orderHistory__ticketBtn"
+                        onClick={() => navigate(`/ticket/${order.booking_code}`)}
+                      >
+                        🎟 Lihat Tiket
+                      </button>
+                    )}
+                    {statusClass(order.status) === "pending" && (
+                      <button
+                        type="button"
+                        className="orderHistory__payBtn"
+                        onClick={() => handleContinuePayment(order)}
+                      >
+                        ⏳ Lanjutkan Pembayaran
+                      </button>
+                    )}
                   </div>
 
                   <div className="orderHistory__topRow">
@@ -167,34 +197,47 @@ export default function RiwayatPesananPage() {
                         >
                           {isExpanded ? "▲" : "▼"}
                         </button>
-                        {order.order_item.image_url ? (
-                          <img
-                            src={order.order_item.image_url}
-                            alt={order.order_item.name}
-                            className="orderHistory__thumbImage"
-                            style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}
-                            onError={(e) => {
-                              (e.currentTarget as HTMLImageElement).src = FALLBACK_IMAGE;
-                            }}
-                          />
-                        ) : (
-                          <div className="orderHistory__thumbIcon">🖼️</div>
-                        )}
+                        <img
+                          src={order.order_item.image_url ?? (order.order_item.type === "accommodation" ? FALLBACK_ACCOMMODATION : FALLBACK_DESTINATION)}
+                          alt={order.order_item.name}
+                          className="orderHistory__thumbImage"
+                          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src =
+                              order.order_item.type === "accommodation" ? FALLBACK_ACCOMMODATION : FALLBACK_DESTINATION;
+                          }}
+                        />
                       </div>
 
                       <div className="orderHistory__detailText">
                         <div className="orderHistory__packageTitle">
                           {order.order_item.name}
                         </div>
-                        <div className="orderHistory__packageCategory">
-                          {order.order_item.category_name}
-                        </div>
-                        <div className="orderHistory__packageMeta">
-                          {order.order_item.date}
-                        </div>
-                        <div className="orderHistory__packageTime">
-                          {order.order_item.start_time} - {order.order_item.end_time}
-                        </div>
+                        {order.order_item.type === "accommodation" ? (
+                          <>
+                            <div className="orderHistory__packageCategory">Penginapan</div>
+                            {order.order_item.facilities && order.order_item.facilities.length > 0 && (
+                              <div className="orderHistory__packageMeta">
+                                {order.order_item.facilities.join(" · ")}
+                              </div>
+                            )}
+                            <div className="orderHistory__packageTime">
+                              {order.qty} Malam
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="orderHistory__packageCategory">
+                              {order.order_item.category_name}
+                            </div>
+                            <div className="orderHistory__packageMeta">
+                              {order.order_item.date}
+                            </div>
+                            <div className="orderHistory__packageTime">
+                              {order.order_item.start_time} - {order.order_item.end_time}
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

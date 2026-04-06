@@ -1,0 +1,299 @@
+/* ── Payment Page (standalone, no navbar/footer) ── */
+.payPage {
+  min-height: 100vh;
+  background: #f0f2f5;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 40px 16px;
+  font-family: inherit;
+}
+
+.payPage__card {
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+}
+
+/* Header */
+.payPage__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #1e8449;
+  padding: 18px 20px;
+  color: #fff;
+}
+
+.payPage__headerLogo {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.payPage__headerName {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.payPage__headerSub {
+  font-size: 11px;
+  opacity: 0.8;
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+/* Item info */
+.payPage__itemInfo {
+  padding: 16px 20px 0;
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 14px;
+}
+
+.payPage__itemName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.payPage__itemMeta {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* QR */
+.payPage__qrWrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.payPage__qrImg {
+  width: 200px;
+  height: 200px;
+  border: 3px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 6px;
+  background: #fff;
+}
+
+.payPage__qrLabel {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+/* Amounts */
+.payPage__amounts {
+  padding: 14px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.payPage__amountRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #555;
+  padding: 4px 0;
+}
+
+.payPage__amountRow span {
+  letter-spacing: 0.5px;
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.payPage__amountRow--total {
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
+  font-size: 15px;
+}
+
+.payPage__amountRow--total span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.payPage__amountRow--total strong {
+  font-size: 20px;
+  color: #1e8449;
+}
+
+/* Booking ref */
+.payPage__bookingRef {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: #f9fafb;
+  font-size: 13px;
+  color: #6b7280;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.payPage__bookingRef strong { color: #374151; }
+
+/* Error */
+.payPage__error {
+  margin: 10px 20px 0;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: #b91c1c;
+}
+
+/* Actions */
+.payPage__actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 20px;
+}
+
+.payPage__cancelBtn,
+.payPage__payBtn {
+  flex: 1;
+  padding: 13px;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+}
+
+.payPage__cancelBtn {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.payPage__cancelBtn:hover:not(:disabled) { background: #e5e7eb; }
+
+.payPage__payBtn {
+  background: #1e8449;
+  color: #fff;
+}
+
+.payPage__payBtn:hover:not(:disabled) { background: #196f3d; }
+
+.payPage__cancelBtn:disabled,
+.payPage__payBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Disclaimer */
+.payPage__disclaimer {
+  font-size: 11px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 0 20px 16px;
+  margin: 0;
+}
+
+/* Loading / Error full-screen */
+.payPage__loading,
+.payPage__errorMsg {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.payPage__errorMsg { color: #b91c1c; }
+
+/* Result screens */
+.payPage__resultHero {
+  padding: 28px 24px 20px;
+  text-align: center;
+  color: #fff;
+}
+
+.payPage__resultHero--paid   { background: #1e8449; }
+.payPage__resultHero--failed { background: #c0392b; }
+
+.payPage__resultHero h2 { margin: 12px 0 4px; font-size: 20px; font-weight: 800; }
+.payPage__resultHero p  { margin: 0; font-size: 13px; opacity: 0.88; }
+
+.payPage__resultIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0 auto;
+  color: #fff;
+}
+
+.payPage__resultBody { padding: 20px; }
+
+.payPage__bookingBox {
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.payPage__bookingBox--paid   { background: #eafaf1; border: 1px solid #a9dfbf; }
+.payPage__bookingBox--failed { background: #fdf2f2; border: 1px solid #f5b7b1; }
+
+.payPage__bookingLabel {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.payPage__bookingCode {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: #1e8449;
+}
+
+.payPage__bookingCode--failed { color: #c0392b; }
+
+.payPage__rows { font-size: 13px; }
+
+.payPage__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  color: #555;
+}
+
+.payPage__row--grand {
+  font-size: 15px;
+  color: #111;
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.payPage__rowDivider {
+  height: 1px;
+  background: #e5e7eb;
+  margin: 6px 0;
+}
+
+.payPage__resultNote {
+  margin: 14px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}

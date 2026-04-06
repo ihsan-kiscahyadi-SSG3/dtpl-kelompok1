@@ -12,6 +12,8 @@ import PaketDetailPage from "./pages/paket-detail/paket-detail";
 import PenginapanPage from "./pages/penginapan/penginapan";
 import WishlistPage from "./pages/wishlist/wishlist";
 import RiwayatPesananPage from "./pages/riwayat-pesanan/riwayat-pesanan";
+import PaymentPage from "./pages/payment/payment";
+import TicketPage from "./pages/ticket/ticket";
 
 import { AuthProvider } from "./contexts/AuthContext";
 
@@ -38,6 +40,10 @@ export default function App() {
           </Route>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          {/* Standalone payment page — no navbar/footer */}
+          <Route path="/payment/:booking_code" element={<PaymentPage />} />
+          {/* Standalone ticket/receipt page — no navbar/footer */}
+          <Route path="/ticket/:booking_code" element={<TicketPage />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
