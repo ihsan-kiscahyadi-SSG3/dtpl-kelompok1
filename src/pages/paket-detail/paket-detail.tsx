@@ -88,7 +88,6 @@ export default function PaketDetailPage() {
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [isPaidOpen, setIsPaidOpen] = useState(false);
   const [isFailedOpen, setIsFailedOpen] = useState(false);
-  const [ticketUrl, setTicketUrl] = useState<string | null>(null);
   const [checkingPayment, setCheckingPayment] = useState(false);
   const autoCheckedRef = useRef(false);
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -325,7 +324,6 @@ export default function PaketDetailPage() {
         setOrderData((prev) => prev ? { ...prev, payment_qr_url: res.qr_url } : prev);
       }
       if (res.status.toLowerCase() === "paid") {
-        setTicketUrl(res.ticket_url ?? null);
         setIsPaymentOpen(false);
         setIsPaidOpen(true);
         document.body.style.overflow = "hidden";

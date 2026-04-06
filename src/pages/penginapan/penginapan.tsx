@@ -76,7 +76,6 @@ export default function PenginapanPage() {
   // result modals
   const [isPaidOpen, setIsPaidOpen] = useState(false);
   const [isFailedOpen, setIsFailedOpen] = useState(false);
-  const [ticketUrl, setTicketUrl] = useState<string | null>(null);
 
   useEffect(() => {
     getAccommodations().then(setRooms).catch(() => { });
@@ -184,7 +183,6 @@ export default function PenginapanPage() {
         setOrderData((prev) => prev ? { ...prev, payment_qr_url: res.qr_url } : prev);
       }
       if (res.status.toLowerCase() === "paid") {
-        setTicketUrl(res.ticket_url ?? null);
         setIsPaymentOpen(false);
         setIsPaidOpen(true);
         document.body.style.overflow = "hidden";
