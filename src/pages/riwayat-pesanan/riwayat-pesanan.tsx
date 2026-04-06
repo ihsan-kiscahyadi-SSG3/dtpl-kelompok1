@@ -155,7 +155,7 @@ export default function RiwayatPesananPage() {
                       <button
                         type="button"
                         className="orderHistory__ticketBtn"
-                        onClick={() => navigate(`/ticket/${order.booking_code}`)}
+                        onClick={() => window.open(`/ticket/${order.booking_code}`, "_blank")}
                       >
                         🎟 Lihat Tiket
                       </button>

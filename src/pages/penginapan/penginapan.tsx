@@ -117,6 +117,11 @@ export default function PenginapanPage() {
     document.body.style.overflow = "hidden";
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Always restore scroll on unmount (e.g. navigating away while a modal is open)
+  useEffect(() => {
+    return () => { document.body.style.overflow = "auto"; };
+  }, []);
+
   // countdown timer
   useEffect(() => {
     if (!isPaymentOpen || !paymentDeadline) return;
@@ -582,7 +587,7 @@ export default function PenginapanPage() {
                 <button
                   type="button"
                   className="resultModal__ticketBtn"
-                  onClick={() => navigate(`/ticket/${orderData.booking_code ?? `ORD-${String(orderData.id).padStart(8, "0")}`}`)}
+                  onClick={() => window.open(`/ticket/${orderData.booking_code ?? `ORD-${String(orderData.id).padStart(8, "0")}`}`, "_blank")}
                 >
                   📄 Lihat Tiket
                 </button>
