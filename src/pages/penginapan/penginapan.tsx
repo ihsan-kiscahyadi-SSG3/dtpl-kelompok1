@@ -43,16 +43,36 @@ export default function PenginapanPage() {
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+  const [paymentDeadline, setPaymentDeadline] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(15 * 60);
   const [bookingTime] = useState(() => new Date());
 
   useEffect(() => {
-    getAccommodations().then(setRooms).catch(() => {});
+    getAccommodations().then(setRooms).catch(() => { });
   }, []);
+  function formatCountdown(totalSeconds: number) {
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes} menit : ${String(seconds).padStart(2, "0")} detik`;
+  }
+  useEffect(() => {
+    if (!isPaymentOpen || !paymentDeadline) return;
 
+    const tick = () => {
+      const diff = Math.max(0, Math.floor((paymentDeadline - Date.now()) / 1000));
+      setTimeLeft(diff);
+    };
+
+    tick();
+    const interval = window.setInterval(tick, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [isPaymentOpen, paymentDeadline]);
   const ticketPrice = Number(selectedRoom?.price ?? 0);
   const localSubTotal = qty * ticketPrice;
-  const subTotal   = orderData ? Number(orderData.sub_total)   : localSubTotal;
-  const taxAmount  = orderData ? Number(orderData.tax)         : 0;
+  const subTotal = orderData ? Number(orderData.sub_total) : localSubTotal;
+  const taxAmount = orderData ? Number(orderData.tax) : 0;
   const grandTotal = orderData ? Number(orderData.order_total) : localSubTotal;
 
   const openModal = (room: Accommodation) => {
@@ -69,7 +89,22 @@ export default function PenginapanPage() {
     setSelectedRoom(null);
     document.body.style.overflow = "auto";
   };
+  const closePayment = () => {
+    setIsPaymentOpen(false);
+    document.body.style.overflow = "auto";
+  };
 
+  const backToSummaryFromPayment = () => {
+    setIsPaymentOpen(false);
+    setSelectedRoom(selectedRoom);
+    setStep(3);
+    document.body.style.overflow = "hidden";
+  };
+
+  const handleCheckPaymentStatus = () => {
+    setIsPaymentOpen(false);
+    setIsReceiptOpen(true);
+  };
   const closeReceipt = () => {
     setIsReceiptOpen(false);
     document.body.style.overflow = "auto";
@@ -123,8 +158,10 @@ export default function PenginapanPage() {
   };
 
   const handlePayNow = () => {
+    setTimeLeft(15 * 60);
+    setPaymentDeadline(Date.now() + 15 * 60 * 1000);
+    setIsPaymentOpen(true);
     setSelectedRoom(null);
-    setIsReceiptOpen(true);
   };
 
   const backToStep1 = () => { setApiError(""); setStep(1); };
@@ -373,7 +410,74 @@ export default function PenginapanPage() {
           </div>
         </div>
       )}
+      {/* ── PAYMENT MODAL ── */}
+      {isPaymentOpen && orderData && (
+        <div className="paymentModal__overlay" onClick={closePayment}>
+          <div className="paymentModal" onClick={(e) => e.stopPropagation()}>
+            <div className="paymentModal__header">
+              <button
+                type="button"
+                className="paymentModal__back"
+                onClick={backToSummaryFromPayment}
+              >
+                ←
+              </button>
+              <h2 className="paymentModal__title">Pembayaran</h2>
+            </div>
 
+            <div className="paymentModal__orderId">
+              Order ID: <strong>{orderData.id}</strong>
+            </div>
+
+            <div className="paymentModal__timerBox">
+              <span className="paymentModal__timerIcon">⏰</span>
+              <span>
+                Silakan selesaikan pembayaranmu dalam{" "}
+                <strong>{formatCountdown(timeLeft)}</strong>
+              </span>
+            </div>
+
+            <div className="paymentModal__qrCard">
+              <div className="paymentModal__qrTitle">
+                Gunakan aplikasi pembayaran kamu untuk scan QR Code berikut
+              </div>
+
+              <img
+                className="paymentModal__qrImage"
+                alt="QR Code Pembayaran"
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+                  JSON.stringify({
+                    orderId: orderData.id,
+                    room: orderData.order_item.name,
+                    qty,
+                    total: grandTotal,
+                    paymentMethod: "QRIS",
+                  })
+                )}`}
+              />
+            </div>
+
+            <button
+              type="button"
+              className="paymentModal__checkBtn"
+              onClick={handleCheckPaymentStatus}
+              disabled={timeLeft === 0}
+            >
+              {timeLeft === 0 ? "Waktu Pembayaran Habis" : "Cek Status Pembayaran"}
+            </button>
+
+            <div className="paymentModal__infoBox">
+              <div className="paymentModal__infoIcon">!</div>
+
+              <ul className="paymentModal__infoList">
+                <li>Buka aplikasi pembayaran (e-wallet atau mobile banking).</li>
+                <li>Scan QR Code yang ditampilkan pada halaman ini.</li>
+                <li>Ikuti instruksi di aplikasi hingga pembayaran berhasil.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
       {/* ── RECEIPT MODAL ── */}
       {isReceiptOpen && orderData && (
         <div className="receiptModal__overlay" onClick={closeReceipt}>

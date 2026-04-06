@@ -1,6 +1,4 @@
-const API_BASE_URL = import.meta.env.DEV
-  ? "http://localhost:8081"
-  : "https://api.desamanudjaya.com";
+const API_BASE_URL = "https://api.desamanudjaya.com";
 
 type ApiError = {
   error?: string;

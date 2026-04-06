@@ -1099,3 +1099,152 @@
 .authPopup__btnCancel:hover {
   background: #f3f4f6;
 }
+
+.paymentModal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.paymentModal {
+  width: 100%;
+  max-width: 360px;
+  background: #f3f3f3;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+}
+
+.paymentModal__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #ececec;
+  border-bottom: 1px solid #dddddd;
+}
+
+.paymentModal__back {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 20px;
+  color: #343434;
+  padding: 0;
+  line-height: 1;
+}
+
+.paymentModal__title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #343434;
+}
+
+.paymentModal__orderId {
+  padding: 12px 18px 4px;
+  font-size: 15px;
+  color: #3b3b3b;
+}
+
+.paymentModal__timerBox {
+  margin: 10px 18px 0;
+  background: #f4e8c9;
+  border-radius: 6px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #5a4c2c;
+}
+
+.paymentModal__timerBox strong {
+  color: #f05a22;
+}
+
+.paymentModal__timerIcon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.paymentModal__qrCard {
+  margin: 12px 18px 0;
+  background: #ffffff;
+  border: 1px solid #dddddd;
+  border-radius: 6px;
+  padding: 14px 12px 18px;
+  text-align: center;
+}
+
+.paymentModal__qrTitle {
+  font-size: 12px;
+  font-weight: 600;
+  color: #343434;
+  margin-bottom: 12px;
+}
+
+.paymentModal__qrImage {
+  width: 220px;
+  height: 220px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto;
+}
+
+.paymentModal__checkBtn {
+  width: calc(100% - 36px);
+  margin: 12px 18px 0;
+  border: none;
+  border-radius: 6px;
+  background: #f2d33f;
+  color: #343434;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 14px 16px;
+  cursor: pointer;
+}
+
+.paymentModal__checkBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.paymentModal__infoBox {
+  margin: 12px 18px 18px;
+  background: #f4e8c9;
+  border-radius: 6px;
+  padding: 14px 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.paymentModal__infoIcon {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #f39a1f;
+  color: #ffffff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.paymentModal__infoList {
+  margin: 0;
+  padding-left: 18px;
+  color: #3f3f3f;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.paymentModal__infoList li + li {
+  margin-top: 4px;
+}
