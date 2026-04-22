@@ -26,7 +26,7 @@ export default function Login() {
       const me = await getMe();
       setSession({ id: me.id, role: me.role, full_name: me.full_name, email: me.email ?? res.email ?? email });
       setLoggedIn(true);
-      navigate("/");
+      navigate(me.role === "admin" ? "/admin/dashboard" : "/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Email atau kata sandi salah.");
     } finally {

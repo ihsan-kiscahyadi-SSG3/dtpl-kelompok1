@@ -46,35 +46,37 @@ export default function Navbar() {
           <img className="loginLeft__logo" src={logo} alt="Logo" />
         </Link>
 
-        <nav className={`nav${menuOpen ? " nav--open" : ""}`}>
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              "nav__link" + (isActive ? " nav__link--active" : "")
-            }
-            onClick={closeMenu}
-          >
-            Beranda
-          </NavLink>
+        {role !== "admin" && (
+          <nav className={`nav${menuOpen ? " nav--open" : ""}`}>
+            <NavLink
+              to="/"
+              end
+              className={({ isActive }) =>
+                "nav__link" + (isActive ? " nav__link--active" : "")
+              }
+              onClick={closeMenu}
+            >
+              Beranda
+            </NavLink>
 
-          <NavLink
-            to="/paket"
-            className={({ isActive }) =>
-              "nav__link" + (isActive ? " nav__link--active" : "")
-            }
-            onClick={closeMenu}
-          >
-            Paket Wisata
-          </NavLink>
+            <NavLink
+              to="/paket"
+              className={({ isActive }) =>
+                "nav__link" + (isActive ? " nav__link--active" : "")
+              }
+              onClick={closeMenu}
+            >
+              Paket Wisata
+            </NavLink>
 
-          <Link to="/penginapan" className="nav__link" onClick={closeMenu}>
-            Penginapan
-          </Link>
-          <a className="nav__link" href="#tentang" onClick={closeMenu}>
-            Tentang Kami
-          </a>
-        </nav>
+            <Link to="/penginapan" className="nav__link" onClick={closeMenu}>
+              Penginapan
+            </Link>
+            <a className="nav__link" href="#tentang" onClick={closeMenu}>
+              Tentang Kami
+            </a>
+          </nav>
+        )}
 
         <div className="nav__actions">
           {!isLoggedIn ? (
@@ -88,28 +90,32 @@ export default function Navbar() {
             </>
           ) : (
             <div className="navAuth">
-              <button
-                className="navIconBtn"
-                type="button"
-                title="Tickets"
-                onClick={() => navigate("/riwayat-pesanan")}
-              >
-                <span className="navIconBtn__icon" aria-hidden="true">
-                  🎟️
-                </span>
-                <span className="navIconBtn__label">Tickets</span>
-              </button>
-              <button
-                className="navIconBtn"
-                type="button"
-                title="Wishlist"
-                onClick={() => navigate("/wishlist")}
-              >
-                <span className="navIconBtn__icon" aria-hidden="true">
-                  ❤️
-                </span>
-                <span className="navIconBtn__label">Wishlist</span>
-              </button>
+              {role !== "admin" && (
+                <>
+                  <button
+                    className="navIconBtn"
+                    type="button"
+                    title="Tickets"
+                    onClick={() => navigate("/riwayat-pesanan")}
+                  >
+                    <span className="navIconBtn__icon" aria-hidden="true">
+                      🎟️
+                    </span>
+                    <span className="navIconBtn__label">Tickets</span>
+                  </button>
+                  <button
+                    className="navIconBtn"
+                    type="button"
+                    title="Wishlist"
+                    onClick={() => navigate("/wishlist")}
+                  >
+                    <span className="navIconBtn__icon" aria-hidden="true">
+                      ❤️
+                    </span>
+                    <span className="navIconBtn__label">Wishlist</span>
+                  </button>
+                </>
+              )}
 
               <div className="profileMenu" ref={menuRef}>
                 <button
