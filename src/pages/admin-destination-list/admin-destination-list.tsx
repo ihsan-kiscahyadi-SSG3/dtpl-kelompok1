@@ -169,7 +169,7 @@ export default function AdminDestinasiPage() {
   const [submitting, setSubmitting] = useState(false);
   const [apiError, setApiError] = useState("");
   const [form, setForm] = useState<DestinationForm>(emptyForm());
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  // const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState("");
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -219,7 +219,7 @@ export default function AdminDestinasiPage() {
     setEditingId(null);
     setApiError("");
     setForm(emptyForm());
-    setImageFile(null);
+    // setImageFile(null);
     setImagePreview("");
     setIsAddModalOpen(true);
   };
@@ -245,7 +245,7 @@ export default function AdminDestinasiPage() {
         ticket_type: detail.ticket_type ?? "price_per_ticket",
         image_url: detail.image_url ?? "",
       });
-      setImageFile(null);
+      // setImageFile(null);
       setImagePreview(detail.image_url ?? "");
     } catch (err) {
       setApiError(
@@ -333,7 +333,7 @@ export default function AdminDestinasiPage() {
 
   const handleImageChange = async (file: File | null) => {
     if (!file) return;
-    setImageFile(file);
+    // setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
     try {
       const uploadedUrl = await uploadImage(file);
@@ -341,7 +341,7 @@ export default function AdminDestinasiPage() {
     } catch (err) {
       setApiError(err instanceof Error ? err.message : "Gagal mengunggah gambar.");
       setImagePreview(form.image_url || "");
-      setImageFile(null);
+      // setImageFile(null);
     }
   };
 
