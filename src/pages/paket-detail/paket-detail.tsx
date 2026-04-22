@@ -623,13 +623,13 @@ export default function PaketDetailPage() {
                                     ? r.comment.slice(0, SHORT_LIMIT) + "…"
                                     : r.comment;
                                   const dateStr = new Date(r.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "short" });
-                                  const initials = r.user_name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
+                                  const initials = (r.user_name ?? "?").split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
                                   return (
                                     <div key={r.id} className="reviewCard">
                                       <div className="reviewCard__top">
                                         <div className="reviewCard__avatar">{initials}</div>
                                         <div className="reviewCard__meta">
-                                          <span className="reviewCard__name">{r.user_name}</span>
+                                          <span className="reviewCard__name">{r.user_name ?? "Anonim"}</span>
                                           <span className="reviewCard__date">{dateStr}</span>
                                         </div>
                                         <div className="reviewCard__stars">
